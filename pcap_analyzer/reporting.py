@@ -10,7 +10,7 @@ import json
 from dataclasses import asdict
 from datetime import datetime, timezone
 from string import Template
-from typing import List
+from typing import List, Optional
 
 from rich.console import Console
 from rich.table import Table
@@ -24,9 +24,21 @@ SEVERITY_COLOR = {
 }
 
 
-def render_terminal(stats: StatsSummary, alerts: List[Alert], source_file: str, verbose: bool = False) -> None:
-    """Print a human-readable investigation summary to the terminal."""
-    console = Console()
+def render_terminal(
+    stats: StatsSummary,
+    alerts: List[Alert],
+    source_file: str,
+    verbose: bool = False,
+    console: Optional[Console] = None,
+) -> None:
+    """Print a human-readable investigation summary to the terminal.
+
+    Accepts an optional pre-built `Console` (e.g. one created with
+    `record=True`) so output can be captured for docs/screenshots without
+    duplicating the rendering logic.
+    """
+    if console is None:
+        console = Console()
 
     console.print(f"\n[bold]PCAP Threat Analyzer[/bold] -- report for [bold]{source_file}[/bold]")
 

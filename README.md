@@ -67,6 +67,12 @@ python -m pcap_analyzer samples/portscan_demo.pcap --output report.json --html r
 
 Two small, entirely synthetic sample captures are included in `samples/` (see [Sample data](#sample-data)) so you can try the tool immediately without providing your own capture.
 
+### Screenshot
+
+Terminal output from `python -m pcap_analyzer samples/portscan_demo.pcap`:
+
+![Terminal output showing capture overview, protocol breakdown, top talkers, and security alerts](docs/terminal_output.svg)
+
 ## Example output
 
 Running against `samples/portscan_demo.pcap` (a synthetic capture of one host scanning 50 ports on another host):
