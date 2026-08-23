@@ -129,6 +129,10 @@ Running against `samples/normal_traffic.pcap` (a short, ordinary browsing sessio
 3. **Top source IPs (by alerts triggered)** — which hosts are actually generating security findings, which isn't always the same list as #2.
 4. **Alert timeline** — when each alert fired during the capture, colored by severity, so a cluster of HIGH alerts is visually obvious.
 
+Output from `python -m pcap_analyzer samples/portscan_demo.pcap --visualize`:
+
+![Visualization summary showing packets over time, top source IPs by volume and by alerts, and an alert timeline](docs/visualization_summary.svg)
+
 ```bash
 python -m pcap_analyzer samples/portscan_demo.pcap --visualize charts/
 ```
