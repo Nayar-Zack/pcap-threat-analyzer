@@ -216,3 +216,11 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# pcap-threat-analyzer: generated reports and scratch captures.
+# The small synthetic demo captures in samples/ are intentionally NOT ignored.
+*.report.json
+*.report.html
+/*.pcap
+/*.pcapng
+
