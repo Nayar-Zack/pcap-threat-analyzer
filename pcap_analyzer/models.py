@@ -101,3 +101,4 @@ class Alert:
     metric_value: float = 0
     threshold: float = 0
     window_seconds: Optional[float] = None
+    timestamp: Optional[float] = None

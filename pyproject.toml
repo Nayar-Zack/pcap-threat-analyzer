@@ -12,6 +12,7 @@ license = { text = "MIT" }
 dependencies = [
     "scapy>=2.5",
     "rich>=13.0",
+    "matplotlib>=3.7",
 ]
 
 [project.scripts]

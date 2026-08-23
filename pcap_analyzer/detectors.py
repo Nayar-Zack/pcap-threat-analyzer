@@ -173,6 +173,7 @@ def detect_port_scan(packets: List[PacketRecord]) -> List[Alert]:
                 metric_value=count,
                 threshold=PORT_SCAN_LOW,
                 window_seconds=PORT_SCAN_WINDOW_SECONDS,
+                timestamp=end,
             )
         )
     return alerts
@@ -189,9 +190,11 @@ def detect_broad_port_usage(packets: List[PacketRecord]) -> List[Alert]:
     """
     alerts: List[Alert] = []
     ports_by_src: Dict[str, set] = defaultdict(set)
+    last_seen_by_src: Dict[str, float] = {}
     for pkt in packets:
         if pkt.proto == "TCP" and pkt.dst_port is not None:
             ports_by_src[pkt.src_ip].add(pkt.dst_port)
+            last_seen_by_src[pkt.src_ip] = max(last_seen_by_src.get(pkt.src_ip, pkt.timestamp), pkt.timestamp)
 
     for src_ip, ports in ports_by_src.items():
         count = len(ports)
@@ -210,6 +213,7 @@ def detect_broad_port_usage(packets: List[PacketRecord]) -> List[Alert]:
                 src_ip=src_ip,
                 metric_value=count,
                 threshold=BROAD_PORTS_LOW,
+                timestamp=last_seen_by_src[src_ip],
             )
         )
     return alerts
@@ -247,6 +251,7 @@ def detect_high_connection_rate(packets: List[PacketRecord]) -> List[Alert]:
                 metric_value=count,
                 threshold=CONN_RATE_LOW,
                 window_seconds=CONN_RATE_WINDOW_SECONDS,
+                timestamp=end,
             )
         )
     return alerts
@@ -265,6 +270,10 @@ def detect_suspicious_dns(dns_queries: List[DNSQuery]) -> List[Alert]:
     alerts: List[Alert] = []
 
     repeat_counts: Counter = Counter((q.src_ip, q.query_name) for q in dns_queries)
+    last_seen_by_pair: Dict[Tuple[str, str], float] = {}
+    for q in dns_queries:
+        key = (q.src_ip, q.query_name)
+        last_seen_by_pair[key] = max(last_seen_by_pair.get(key, q.timestamp), q.timestamp)
     for (src_ip, query_name), count in repeat_counts.items():
         severity = _severity_for(count, DNS_REPEAT_LOW, DNS_REPEAT_MEDIUM, DNS_REPEAT_HIGH)
         if severity is None:
@@ -282,6 +291,7 @@ def detect_suspicious_dns(dns_queries: List[DNSQuery]) -> List[Alert]:
                 src_ip=src_ip,
                 metric_value=count,
                 threshold=DNS_REPEAT_LOW,
+                timestamp=last_seen_by_pair[(src_ip, query_name)],
             )
         )
 
@@ -307,6 +317,7 @@ def detect_suspicious_dns(dns_queries: List[DNSQuery]) -> List[Alert]:
                 metric_value=count,
                 threshold=DNS_RATE_LOW,
                 window_seconds=DNS_RATE_WINDOW_SECONDS,
+                timestamp=end,
             )
         )
 
@@ -355,6 +366,7 @@ def detect_long_dns_labels(dns_queries: List[DNSQuery]) -> List[Alert]:
                 src_ip=q.src_ip,
                 metric_value=length,
                 threshold=DNS_LABEL_LOW,
+                timestamp=q.timestamp,
             )
         )
     return alerts
