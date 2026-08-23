@@ -8,7 +8,9 @@ import sys
 from pcap_analyzer.detectors import run_all_detectors
 from pcap_analyzer.parser import parse_pcap
 from pcap_analyzer.reporting import render_html, render_json, render_terminal
+from pcap_analyzer.siem_export import export_siem
 from pcap_analyzer.stats import compute_stats
+from pcap_analyzer.visualization import generate_visualizations
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -24,6 +26,22 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--html", metavar="FILE", help="Write the report as a static HTML page to FILE")
     parser.add_argument(
         "--verbose", action="store_true", help="Include the top-conversations table in terminal output"
+    )
+    parser.add_argument(
+        "--visualize",
+        metavar="DIR",
+        nargs="?",
+        const="visualizations",
+        default=None,
+        help=(
+            "Generate a PNG/SVG visualization summary (packets over time, top source IPs, "
+            "alert timeline) and write it to DIR (default: ./visualizations/)"
+        ),
+    )
+    parser.add_argument(
+        "--export-siem-format",
+        metavar="FILE",
+        help="Export alerts to FILE in the Mini SIEM Log Analyzer's alert schema (.json or .csv)",
     )
     return parser
 
@@ -52,6 +70,15 @@ def main(argv=None) -> int:
     if args.html:
         render_html(stats, alerts, args.capture, args.html)
         print(f"HTML report written to {args.html}")
+
+    if args.visualize:
+        written = generate_visualizations(packets, stats, alerts, args.capture, args.visualize)
+        for path in written:
+            print(f"Visualization written to {path}")
+
+    if args.export_siem_format:
+        export_siem(alerts, args.export_siem_format)
+        print(f"SIEM-format alert export written to {args.export_siem_format}")
 
     return 0
 
